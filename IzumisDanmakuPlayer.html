@@ -1,6 +1,11 @@
 <!DOCTYPE html>
+<!-- Izumi's DanmakuPlayer v1.1 -->
 <html>
-    <body>
+    <head>
+		<script type="text/javascript" src="loadxmldoc.js">
+		</script>
+	</head>
+	<body>
 		<video hidden=true id="Video" controls width="672" autoplay src="demo.mp4"></video>
         <div class="container" id="dmplayer">
 			<canvas id="DanmakuPlayer" width="672" height="380"></canvas>
@@ -13,25 +18,30 @@
 		</style>
 		<div align=center>
 			<input type="text" id="text_danmaku"></input>
-			<button type="submit" id="btn_senddm" onclick="SendADanmaku()">Send</button>
+			<button type="submit" id="btn_senddm" onclick="btn_senddm_click()">Send</button>
 		</div>
     </body>
 	<script>
-		function SendADanmaku()
+		function SendADanmaku(Text)
 		{
 			lastdanmaku = lastdanmaku + 1;
 			danmaku_location_x[lastdanmaku] = c.width;
 			danmaku_location_y[lastdanmaku] = parseInt(fontsize);
-			danmaku_text[lastdanmaku] = text_danmaku.value;
-			danmaku_length[lastdanmaku] = jmz.GetLength(text_danmaku.value) * parseInt(fontsize)
-			text_danmaku.value = "";
+			danmaku_text[lastdanmaku] = Text;
+			danmaku_length[lastdanmaku] = jmz.GetLength(Text) * parseInt(fontsize)
 			if (danmaku_location_x[lastdanmaku - 1]>c.width - danmaku_length[lastdanmaku-1])
 			{
 				danmaku_location_y[lastdanmaku] = danmaku_location_y[lastdanmaku-1] + parseInt(fontsize)
 			}
 		}
+		function btn_senddm_click()
+		{
+			SendADanmaku(text_danmaku.value);
+			AddADanmaku(text_danmaku.value);
+			text_danmaku.value = "";
+		}
 	</script>
-    <script>
+    <script type="text/javascript">
         var v = document.getElementById("Video");
         var c = document.getElementById("DanmakuPlayer");
         ctx = c.getContext('2d');
@@ -42,13 +52,32 @@
 		var danmaku_length = new Array();
 		var lastdanmaku = 0;
 		var fontsize = "16";
-		var line = c.height / parseInt(fontsize)
+		var tunit = 1;
+		var _debug
+		xmlDoc = loadXMLDoc("danmaku.xml");
+		var oSerializer = new XMLSerializer();
+		var sXML = oSerializer.serializeToString(xmlDoc);
 		ctx.font = fontsize + "px Arial";
 		ctx.fillStyle = "red";
+		function AddADanmaku(Text)
+		{
+			sXML = oSerializer.serializeToString(xmlDoc);
+			newel=xmlDoc.createElement("d"+tunit);
+			newtext=xmlDoc.createTextNode(Text);
+			newel.appendChild(newtext);
+			x=xmlDoc.getElementsByTagName("danmaku")[0];
+			x.appendChild(newel);
+			// You can save sXML as danmaku.xml to update danmaku database.
+		}
         v.addEventListener('play', function() {
-            var i = window.setInterval(function() {
-                ctx.drawImage(v, 0, 0, 672, 380)
-				for (var i=danmaku_location_x.length;i>-1;i--)
+        var i = window.setInterval(function() {
+            ctx.drawImage(v, 0, 0, 672, 380)
+			tunit = tunit + 1
+			if (sXML.indexOf("d"+tunit) > 0)
+			{
+				SendADanmaku(xmlDoc.getElementsByTagName("d"+tunit)[0].childNodes[0].nodeValue);
+			}
+			for (var i=lastdanmaku;i>-1;i--)
 					{
 					if (danmaku_location_x[i]>-c.width)
 						{
