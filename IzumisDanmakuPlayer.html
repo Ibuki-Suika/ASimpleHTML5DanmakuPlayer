@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <body>
+		<video hidden=true id="Video" controls width="672" autoplay src="demo.mp4"></video>
+        <div class="container" id="dmplayer">
+			<canvas id="DanmakuPlayer" width="672" height="380"></canvas>
+		</div>
+		<style type="text/css">
+			.container{
+				margin:0 auto;
+				width:672px;
+			}
+		</style>
+		<div align=center>
+			<input type="text" id="text_danmaku"></input>
+			<button type="submit" id="btn_senddm" onclick="SendADanmaku()">Send</button>
+		</div>
+    </body>
+	<script>
+		function SendADanmaku()
+		{
+			lastdanmaku = lastdanmaku + 1;
+			danmaku_location_x[lastdanmaku] = c.width;
+			danmaku_location_y[lastdanmaku] = parseInt(fontsize);
+			danmaku_text[lastdanmaku] = text_danmaku.value;
+			danmaku_length[lastdanmaku] = jmz.GetLength(text_danmaku.value) * parseInt(fontsize)
+			text_danmaku.value = "";
+			if (danmaku_location_x[lastdanmaku - 1]>c.width - danmaku_length[lastdanmaku-1])
+			{
+				danmaku_location_y[lastdanmaku] = danmaku_location_y[lastdanmaku-1] + parseInt(fontsize)
+			}
+		}
+	</script>
+    <script>
+        var v = document.getElementById("Video");
+        var c = document.getElementById("DanmakuPlayer");
+        ctx = c.getContext('2d');
+		v.volume = 0.1;
+		var danmaku_location_x = new Array();
+		var danmaku_location_y = new Array();
+		var danmaku_text = new Array();
+		var danmaku_length = new Array();
+		var lastdanmaku = 0;
+		var fontsize = "16";
+		var line = c.height / parseInt(fontsize)
+		ctx.font = fontsize + "px Arial";
+		ctx.fillStyle = "red";
+        v.addEventListener('play', function() {
+            var i = window.setInterval(function() {
+                ctx.drawImage(v, 0, 0, 672, 380)
+				for (var i=danmaku_location_x.length;i>-1;i--)
+					{
+					if (danmaku_location_x[i]>-c.width)
+						{
+						danmaku_location_x[i] = danmaku_location_x[i] - 2
+						ctx.fillText(danmaku_text[i],danmaku_location_x[i],danmaku_location_y[i])
+						}
+					}
+			}, 20)
+		}, false);
+    </script>
+	<script>
+	var jmz = {};
+	jmz.GetLength = function(str) {
+		return str.replace(/[\u0391-\uFFE5]/g,"aa").length;
+	};
+	</script>
+</html>
