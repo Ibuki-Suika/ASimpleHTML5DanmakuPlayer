@@ -5,7 +5,7 @@
 		<script type="text/javascript" src="loadxmldoc.js"></script>
 		<script type="text/javascript" src="http://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
 		<style>
-		input{
+		input[type='text']{
 			transition:all 0.30s ease-in-out;
 			-webkit-transition: all 0.30s ease-in-out;
 			-moz-transition: all 0.30s ease-in-out;
@@ -13,29 +13,36 @@
 			border:#35a5e5 1px solid;
 			border-radius:3px;
 			outline:none;
+			font:12px '微软雅黑';
 		}
-		input:focus{
+		input[type='text']:focus{
 			box-shadow:0 0 5px rgba(81, 203, 238, 1);
 			-webkit-box-shadow:0 0 5px rgba(81, 203, 238, 1);
 			-moz-box-shadow:0 0 5px rgba(81, 203, 238, 1);
 		}
-		a{
-			text-decoration:none;
-			background:rgba(81, 203, 238, 1);
-			color:white;padding: 6px 25px 6px 25px;
-			font:12px '微软雅黑';
-			border-radius:3px;
+		body{background-size:100%;}
+		textarea{
+			transition:all 0.30s ease-in-out;
+			-webkit-transition: all 0.30s ease-in-out;
+			-moz-transition: all 0.30s ease-in-out;
 			
-			-webkit-transition:all linear 0.30s;
-			-moz-transition:all linear 0.30s;
-			transition:all linear 0.30s;
+			border:#35a5e5 1px solid;
+			border-radius:3px;
+			outline:none;
+			font:12px '微软雅黑';
 		}
-		a:hover{background:rgba(39, 154, 187, 1);}
+		textarea:focus{
+			box-shadow:0 0 5px rgba(81, 203, 238, 1);
+			-webkit-box-shadow:0 0 5px rgba(81, 203, 238, 1);
+			-moz-box-shadow:0 0 5px rgba(81, 203, 238, 1);
+		}
 		</style>
 	</head>
 	<link rel="stylesheet" href="css/style.css" media="screen" type="text/css" />
 	<body>
-		<video hidden=true id="Video" controls width="672" autoplay src="demo.mp4"></video>
+		<br>
+		<br>
+		<video hidden=true id="Video" width="672" src="demo.mp4"></video>
 		<div id="maincontent">
 			<div class="container" id="dmplayer">
 				<canvas id="DanmakuPlayer" width="672" height="380"></canvas>
@@ -46,20 +53,43 @@
 					width:672px;
 				}
 			</style>
+			<input id="VideoSlider" type="range" style="width:672px; height:15px; margin:0 auto;display:block;" min="0" max="100" value="0" onclick="VideoSliderFunction()"/>  
 			<div align=center>
-				<input type="text" id="text_danmaku" style="width:570px;height:30px"></input>
-				<button class="btn btn-small btn-orange" type="submit" id="btn_senddm" onclick="btn_senddm_click()" style="width:102px;height:30px">发送弹幕</button>
+				<input type="text" id="text_danmaku" style="width:382px;height:30px;" placeholder="这儿可以发弹幕(*。∀。)"></input>
+				<button class="btn btn-small btn-orange" type="submit" id="btn_senddm" onclick="btn_senddm_click()" style="width:92px;height:30px">发送弹幕</button>
+				<input id="VolumeSlider" type="range" style="width:100px; height:15px;" min="0" max="100" value="100" onclick="VolumeSliderFunction()"/>  
+				<button class="btn btn-small btn-orange" id="btn_play" style="width:64px;height:30px" onclick="btn_play_click()">►/‖</button>
+			</div>
+			<br>
+			<div>
+				<textarea readonly="readonly" id="desc_textarea" style="margin:0 auto;display:block;width:672px;height:92px;resize:none;color:grey;"></textarea>
 			</div>
 		</div>
+		<footer>
+		<br>
+		<p align=center>Izumi's Danmaku Player  -  一个开源弹幕播放器 <a href="#">开放许可</a></p>
+		<br>
+		</footer>
     </body>
 	<script>
+		var ms;
+		function VolumeSliderFunction()
+		{
+			v.volume = VolumeSlider.value / 100;
+		}
+		function VideoSliderFunction()
+		{
+			v.currentTime = VideoSlider.value;
+			ms = VideoSlider.value * 1000;
+			tunit = ms/20;
+		}
 		function SendADanmaku(Text)
 		{
 			lastdanmaku = lastdanmaku + 1;
 			danmaku_location_x[lastdanmaku] = c.width;
 			danmaku_location_y[lastdanmaku] = parseInt(fontsize);
 			danmaku_text[lastdanmaku] = Text;
-			danmaku_length[lastdanmaku] = jmz.GetLength(Text) * parseInt(fontsize)
+			danmaku_length[lastdanmaku] = jmz.GetLength(Text) * parseInt(fontsize) * 0.5
 			if (danmaku_location_x[lastdanmaku - 1]>c.width - danmaku_length[lastdanmaku-1])
 			{
 				danmaku_location_y[lastdanmaku] = danmaku_location_y[lastdanmaku-1] + parseInt(fontsize)
@@ -71,10 +101,51 @@
 			AddADanmaku(text_danmaku.value);
 			text_danmaku.value = "";
 		}
+		function btn_play_click()
+		{
+			if(isplaying == 1)
+			{
+				isplaying = 0;
+				Video.pause();
+			}
+			else
+			{
+				isplaying = 1;
+				Video.play();
+			}
+		}
 	</script>
     <script type="text/javascript">
-        var v = document.getElementById("Video");
+        	<?php
+		$vidno = @$_GET['v'];
+		$myfile = fopen("data/" . $vidno . "/info.xml", "r");
+		$xmlstr = fread($myfile,filesize("data/" . $vidno . "/info.xml"));
+		$xml = new SimpleXMLElement($xmlstr);
+		$returndata = $xml->root->title;
+		?> 
+		var vid_title = "<?php echo $returndata?>"
+		var vid_desc = "<?php 
+		$returndata = $xml->root->desc;
+		echo $returndata?>"
+		var vid_author = "<?php 
+		$returndata = $xml->root->author;
+		echo $returndata?>"
+		var v = document.getElementById("Video");
         var c = document.getElementById("DanmakuPlayer");
+		var videonumber = "<?php echo @$_GET['v']?>";
+		var vid_source ="<?php 
+		$returndata = $xml->root->source;
+		echo $returndata?>"
+		var vid_bg = "<?php 
+		$returndata = $xml->root->bg;
+		echo $returndata?>"
+		var vid_avatar = "<?php 
+		$returndata = $xml->root->avatar;
+		echo $returndata?>"
+		document.getElementById('desc_textarea').value=vid_desc;
+		var pagetitle = "Izumi's"
+		document.title = "【" + pagetitle + "】 " + vid_title + " - " + vid_author;
+		var vidroot = "data/"+videonumber+"/"
         ctx = c.getContext('2d');
 		v.volume = 0.1;
 		var danmaku_location_x = new Array();
@@ -84,40 +155,52 @@
 		var lastdanmaku = 0;
 		var fontsize = "20";
 		var tunit = 1;
-		var _debug
-		xmlDoc = loadXMLDoc("./danmaku.xml");
+		var _debug;
+		xmlDoc = loadXMLDoc(vidroot+"/danmaku.xml");
 		var oSerializer = new XMLSerializer();
 		var sXML = oSerializer.serializeToString(xmlDoc);
+		var isplaying = 0;
 		ctx.font = fontsize + "px 黑体";
 		ctx.fillStyle = "white";
 		ctx.strokeStyle = "black";
 		ctx.lineWidth = 1;
+		var speed = 2;
+		var danmaku_content;
+		$('#Video').attr('src', vid_source);
+		v.pause();
+		document.body.style.backgroundImage="url("+vid_bg+")";
 		function AddADanmaku(Text)
 		{
 			$.ajax({
 				type: "get",
-				url: "dm.php?dm="+Text+"&t="+tunit,
+				url: "dm.php?dm="+Text+"&t="+tunit+"&v="+videonumber,
 			});
 		}
-        v.addEventListener('play', function() {
-        var i = window.setInterval(function() {
+        document.getElementById("Video").addEventListener("play", function(){
+			VideoSlider.max = v.duration;
+		});
+		var Interval = window.setInterval(function() {
             ctx.drawImage(v, 0, 0, 672, 380)
-			tunit = tunit + 1
-			if (sXML.indexOf("d"+tunit) > 0)
+			if (isplaying == 1)
 			{
-				SendADanmaku(xmlDoc.getElementsByTagName("d"+tunit)[0].childNodes[0].nodeValue);
-			}
-			for (var i=lastdanmaku;i>-1;i--)
-					{
-					if (danmaku_location_x[i]>-c.width)
+				tunit = tunit + 1;
+				VideoSlider.value = v.currentTime;
+				if (sXML.indexOf("d"+tunit) > 0)
+				{
+					danmaku_content=xmlDoc.getElementsByTagName("d"+tunit)[0].childNodes[0].nodeValue;
+					SendADanmaku(String(danmaku_content));
+				}
+				for (var i=lastdanmaku;i>-1;i--)
 						{
-						danmaku_location_x[i] = danmaku_location_x[i] - 2
-						ctx.fillText(danmaku_text[i],danmaku_location_x[i],danmaku_location_y[i])
-						ctx.strokeText(danmaku_text[i],danmaku_location_x[i],danmaku_location_y[i])
+						if (danmaku_location_x[i]>-c.width)
+							{
+							danmaku_location_x[i] = danmaku_location_x[i] - speed
+							ctx.fillText(danmaku_text[i],danmaku_location_x[i],danmaku_location_y[i])
+							ctx.strokeText(danmaku_text[i],danmaku_location_x[i],danmaku_location_y[i])
+							}
 						}
-					}
+				}
 			}, 20)
-		}, false);
     </script>
 	<script>
 	var jmz = {};
