@@ -1,6 +1,6 @@
 # A Simple HTML5 DanmakuPlayer
 This is the most easiest sample of making an danmaku player
-这是一个最简单的弹幕播放器例子，通过HTML+JS+PHP实现，弹幕发送后会后台会自动覆写xml。
+这是一个最简单的弹幕播放器例子，通过HTML+JS+PHP实现，弹幕发送后会后台会自动覆写xml。写这个脚本的人，我--就是个傻子，连Node.js都不会用2333333333333333.没办法，用PHP凑合凑合吧。
 
 # 播放器原理
 利用HTML5的Canvas每20ms绘出视频帧，然后再用filltext来满足弹幕效果。
