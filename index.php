@@ -37,12 +37,15 @@
 			-moz-box-shadow:0 0 5px rgba(81, 203, 238, 1);
 		}
 		</style>
+	<script>
+		window.onerror=function(){return true;} 
+	</script>
 	</head>
 	<link rel="stylesheet" href="css/style.css" media="screen" type="text/css" />
 	<body>
 		<br>
 		<br>
-		<video hidden=true id="Video" width="672" src="demo.mp4"></video>
+		<video hidden=true id="Video" width="672" src=""></video>
 		<div id="maincontent">
 			<div class="container" id="dmplayer">
 				<canvas id="DanmakuPlayer" width="672" height="380"></canvas>
@@ -72,6 +75,15 @@
 		</footer>
     </body>
 	<script>
+		window.onload = function() {
+			if(window.applicationCache){
+				var html5=true;
+			}
+			else{
+				var html5=false;
+				alert("你所使用的浏览器不支持HTML5，推荐使用Chrome浏览本页。");
+			}
+		}
 		var ms;
 		function VolumeSliderFunction()
 		{
@@ -93,6 +105,10 @@
 			if (danmaku_location_x[lastdanmaku - 1]>c.width - danmaku_length[lastdanmaku-1])
 			{
 				danmaku_location_y[lastdanmaku] = danmaku_location_y[lastdanmaku-1] + parseInt(fontsize)
+				if(danmaku_location_y[lastdanmaku] > 380)
+				{
+					danmaku_location_y[lastdanmaku]=0;
+				}
 			}
 		}
 		function btn_senddm_click()
@@ -116,7 +132,7 @@
 		}
 	</script>
     <script type="text/javascript">
-        	<?php
+			<?php
 		$vidno = @$_GET['v'];
 		$myfile = fopen("data/" . $vidno . "/info.xml", "r");
 		$xmlstr = fread($myfile,filesize("data/" . $vidno . "/info.xml"));
@@ -156,9 +172,11 @@
 		var fontsize = "20";
 		var tunit = 1;
 		var _debug;
-		xmlDoc = loadXMLDoc(vidroot+"/danmaku.xml");
-		var oSerializer = new XMLSerializer();
-		var sXML = oSerializer.serializeToString(xmlDoc);
+		var xhr = new XMLHttpRequest();
+		xhr.open("GET","./"+vidroot+"danmaku.xml",false);
+		xhr.send(null);
+		doc = xhr.responseXML;
+		sXML = xhr.responseText;
 		var isplaying = 0;
 		ctx.font = fontsize + "px 黑体";
 		ctx.fillStyle = "white";
@@ -166,6 +184,10 @@
 		ctx.lineWidth = 1;
 		var speed = 2;
 		var danmaku_content;
+		v.onwaiting = function () {
+			isplaying = 0;
+			v.pause();
+		};
 		$('#Video').attr('src', vid_source);
 		v.pause();
 		document.body.style.backgroundImage="url("+vid_bg+")";
@@ -180,14 +202,14 @@
 			VideoSlider.max = v.duration;
 		});
 		var Interval = window.setInterval(function() {
-            ctx.drawImage(v, 0, 0, 672, 380)
-			if (isplaying == 1)
+		if (isplaying == 1)
 			{
+				ctx.drawImage(v, 0, 0, 672, 380);
 				tunit = tunit + 1;
 				VideoSlider.value = v.currentTime;
 				if (sXML.indexOf("d"+tunit) > 0)
 				{
-					danmaku_content=xmlDoc.getElementsByTagName("d"+tunit)[0].childNodes[0].nodeValue;
+					danmaku_content=doc.getElementsByTagName("d"+tunit)[0].childNodes[0].nodeValue;
 					SendADanmaku(String(danmaku_content));
 				}
 				for (var i=lastdanmaku;i>-1;i--)
